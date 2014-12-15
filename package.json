@@ -1,0 +1,28 @@
+{
+  "name": "hortinstein-teltech-challenege",
+  "version": "0.0.1",
+  "description": "TelTech-Challenge =================",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hortinstein/TelTech-Challenge.git"
+  },
+  "keywords": [
+    "teltech"
+  ],
+  "author": "hortinstein",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hortinstein/TelTech-Challenge/issues"
+  },
+  "homepage": "https://github.com/hortinstein/TelTech-Challenge",
+  "dependencies": {
+    "amqp": "^0.2.0",
+    "measured": "^0.1.6",
+    "mocha": "^2.0.1",
+    "should": "^4.4.1"
+  }
+}
