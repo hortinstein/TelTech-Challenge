@@ -2,6 +2,5 @@
     "user": "challenge",
     "pass": "k64sMKmWEyg85VZs",
     "host": "rabbitmq.challenge.teltech.co",
-    "port": 5672,
-    "submissionKey": "b6269514-8488-11e4-9f42-0242ac110016"
+    "port": 5672
 }
