@@ -8,9 +8,12 @@ var amqp = require('amqp');
 var http = require('http');
 var stats = require('measured').createCollection();
 var exchange = ''
+
 setInterval(function() {
-    console.log(stats.toJSON());
+    console.log("Current Rate of Reqs/Sec",(stats.toJSON().respsPerSecond.currentRate)*60);
 }, 1000);
+
+
 //amqp[s]://[user:password@]hostname[:port][/vhost]
 var challengeHost = 'amqp://' + config.user + ":" + config.pass + "@" + config.host + ":" + config.port;
 var connection = amqp.createConnection({
