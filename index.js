@@ -4,43 +4,44 @@ var config = require('./config.json');
 var amqp = require('amqp');
 var http = require('http');
 var stats = require('measured').createCollection();
-
-// setInterval(function() {
-//     console.log(stats.toJSON());
-// }, 1000);
-
-
+var exchange = ''
+setInterval(function() {
+    console.log(stats.toJSON());
+}, 1000);
 //amqp[s]://[user:password@]hostname[:port][/vhost]
 var challengeHost = 'amqp://' + config.user + ":" + config.pass + "@" + config.host + ":" + config.port;
 var connection = amqp.createConnection({
     url: challengeHost
 });
-
-
-
-var sendResp = function(payload, callback){
-    console.log("sending resp");
-    exc.publish('formula_solution', payload, {});
+var sendResp = function(payload, callback) {
+    var encoded_payload = JSON.stringify(payload);
+    exchange.publish('formula_solution',encoded_payload);
+    callback();
 }
-
 var handleMessage = function(payload, callback) {
     var jsonResp = {
-        "uuid": payload.uuid,
-        "contestant_uuid": config.submissionKey,
-        "formula": payload.formula,
-        "solution": eval(payload.formula)
+        uuid: payload.uuid,
+        contestant_uuid: config.submissionKey,
+        formula: payload.formula,
+        solution: eval(payload.formula)
     }
-    callback(null,jsonResp);
+    callback(null, jsonResp);
 }
-
-
 // Wait for connection to become established.
-connection.on('ready', function() {
-    console.log("connected to:" + challengeHost);
-    var exc = connection.exchange('amq.topic');
-    exc.on('open', function(){
-       console.log('exc open'); 
+connection.once('ready', function() {
+    exchange = connection.exchange('amq.topic', {}, function() {
+        var queue = connection.queue('formula_solution', function() {
+            console.log('Queue ' + exchange.name + ' is open');
+            queue.bind(exchange.name, '');
+            queue.subscribe(function(msg) {
+                console.log('Subscribed to msg: ' + JSON.stringify(msg));
+            });
+        });
+        queue.on('queueBindOk', function() {
+            console.log('Queue bound successfully.');
+        });
     });
+    console.log("connected to:" + challengeHost);
     // Use the default 'amq.topic' exchange
     connection.queue('hortinstein', function(q) {
         // Catch all messages
@@ -51,12 +52,15 @@ connection.on('ready', function() {
             var encoded_payload = unescape(message.data)
             var payload = JSON.parse(encoded_payload)
             stats.meter('messagesPerSecond').mark();
-            handleMessage(payload, function(e,r) {
+            handleMessage(payload, function(e, r) {
                 stats.meter('solvedPerSecond').mark();
-                sendResp(payload, function(e,r){
+                sendResp(payload, function(e, r) {
                     stats.meter('respsPerSecond').mark();
                 })
             })
         });
     });
 });
+connection.on('error', function(e, r) {
+    console.log(e, r)
+})
